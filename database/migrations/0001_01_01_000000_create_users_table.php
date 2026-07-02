@@ -15,6 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('nip')->unique()->nullable();
+            $table->string('phone')->nullable();
+            $table->enum('role', ['guest', 'receptionist', 'customer_service', 'koordinator_wisma'])->default('guest');
+            $table->string('instansi')->nullable();
+            $table->integer('kunjungan')->default(0);
+            $table->timestamp('last_visit_at')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
