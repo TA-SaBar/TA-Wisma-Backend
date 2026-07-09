@@ -31,15 +31,15 @@ class FacilityFilterTest extends TestCase
 
     public function test_can_filter_facilities_by_type()
     {
-        Facility::factory()->create(['type' => 'kamar', 'name' => 'Kamar A']);
-        Facility::factory()->create(['type' => 'ruang_rapat', 'name' => 'Ruang Rapat A']);
+        Facility::factory()->create(['type' => 'Buah', 'name' => 'Kamar A']);
+        Facility::factory()->create(['type' => 'Rapat', 'name' => 'Ruang Rapat A']);
 
         $user = User::factory()->create();
         $token = $user->createToken('auth-token')->plainTextToken;
 
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $token,
-        ])->getJson('/api/facilities?type=kamar');
+        ])->getJson('/api/facilities?type=Buah');
 
         $response->assertStatus(200)
                  ->assertJsonCount(1, 'data')
@@ -55,16 +55,16 @@ class FacilityFilterTest extends TestCase
         // filter type diabaikan. Akibatnya, response akan mengembalikan 2 data (Kamar A & Ruang Rapat A)
         // padahal seharusnya hanya 1 data (Kamar A) karena kita memfilter type=kamar.
         
-        Facility::factory()->create(['status' => 'READY', 'type' => 'kamar', 'name' => 'Kamar A']);
-        Facility::factory()->create(['status' => 'READY', 'type' => 'ruang_rapat', 'name' => 'Ruang Rapat A']);
-        Facility::factory()->create(['status' => 'MAINTENANCE', 'type' => 'kamar', 'name' => 'Kamar B']);
+        Facility::factory()->create(['status' => 'READY', 'type' => 'Buah', 'name' => 'Kamar A']);
+        Facility::factory()->create(['status' => 'READY', 'type' => 'Rapat', 'name' => 'Ruang Rapat A']);
+        Facility::factory()->create(['status' => 'MAINTENANCE', 'type' => 'Buah', 'name' => 'Kamar B']);
 
         $user = User::factory()->create();
         $token = $user->createToken('auth-token')->plainTextToken;
 
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $token,
-        ])->getJson('/api/facilities?status=READY&type=kamar');
+        ])->getJson('/api/facilities?status=READY&type=Buah');
 
         // Seharusnya hanya mengembalikan 1 fasilitas (Kamar A)
         $response->assertStatus(200)

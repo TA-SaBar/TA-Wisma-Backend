@@ -26,9 +26,6 @@ class UpdateProfileRequest extends FormRequest
             'email'    => ['sometimes', 'email', 'max:255', 'unique:users,email,' . $this->user()->id],
             'phone'    => ['sometimes', 'nullable', 'string', 'max:20'],
             'instansi' => ['sometimes', 'nullable', 'string', 'max:255'],
-            // Update password (opsional — hanya jika diisi)
-            'password'              => ['sometimes', 'nullable', 'string', 'min:8', 'confirmed'],
-            'password_confirmation' => ['sometimes', 'nullable', 'string'],
         ];
     }
 
@@ -39,8 +36,6 @@ class UpdateProfileRequest extends FormRequest
     {
         return [
             'email.unique'        => 'Email sudah digunakan oleh akun lain.',
-            'password.min'        => 'Password minimal 8 karakter.',
-            'password.confirmed'  => 'Konfirmasi password tidak cocok.',
         ];
     }
 }

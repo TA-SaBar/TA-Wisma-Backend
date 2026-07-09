@@ -28,29 +28,17 @@ class FacilityController extends Controller
     {
         $query = Facility::query();
 
+        // BUG ITERASI 1 SUDAH DIPERBAIKI:
+        // Sebelumnya, blok filter status me-return lebih awal sehingga filter
+        // type, gedung, lantai, dan search diabaikan ketika status diisi.
+        // Sekarang semua filter dibangun secara berantai sebelum query dieksekusi.
+
         // Filter by status
         if ($request->has('status') && $request->status !== '') {
             $query->where('status', $request->status);
-
-            // BUG SIMULASI ITERASI 1:
-            // Ketika status filter aktif, filter type di bawah ini berada di dalam
-            // blok if status, sehingga filter type HANYA bekerja jika status juga diisi.
-            // Namun yang lebih parah, ada kesalahan: kita return lebih awal (melakukan
-            // query terpisah) tanpa menerapkan filter type, gedung, dan lantai.
-            // Ini menyebabkan saat user memfilter status + type bersamaan,
-            // filter type diabaikan.
-
-            $facilities = $query->orderBy('name')->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $facilities,
-                'total' => $facilities->count(),
-            ]);
         }
 
-        // Filter by type — BUG: kode ini TIDAK tercapai jika status diisi,
-        // karena sudah di-return di atas
+        // Filter by type
         if ($request->has('type') && $request->type !== '') {
             $query->where('type', $request->type);
         }
@@ -65,7 +53,7 @@ class FacilityController extends Controller
             $query->where('lantai', $request->lantai);
         }
 
-        // Search by name
+        // Search by name or description
         if ($request->has('search') && $request->search !== '') {
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
@@ -77,8 +65,8 @@ class FacilityController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $facilities,
-            'total' => $facilities->count(),
+            'data'    => $facilities,
+            'total'   => $facilities->count(),
         ]);
     }
 

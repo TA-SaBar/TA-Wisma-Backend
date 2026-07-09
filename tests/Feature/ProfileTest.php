@@ -39,7 +39,7 @@ class ProfileTest extends TestCase
     }
 
     /**
-     * User berhasil mengubah password.
+     * User berhasil mengubah password melalui endpoint terpisah.
      */
     public function test_user_can_update_password()
     {
@@ -50,7 +50,8 @@ class ProfileTest extends TestCase
         $token = $user->createToken('auth-token')->plainTextToken;
 
         $response = $this->withHeaders(['Authorization' => 'Bearer ' . $token])
-            ->putJson('/api/profile', [
+            ->putJson('/api/profile/password', [
+                'current_password'      => 'oldpassword123',
                 'password'              => 'newpassword123',
                 'password_confirmation' => 'newpassword123',
             ]);
@@ -63,15 +64,40 @@ class ProfileTest extends TestCase
     }
 
     /**
+     * Update password gagal jika password lama salah.
+     */
+    public function test_password_update_fails_when_current_password_wrong()
+    {
+        $user  = User::factory()->create([
+            'password' => Hash::make('benarnya_ini'),
+            'role'     => 'guest',
+        ]);
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        $response = $this->withHeaders(['Authorization' => 'Bearer ' . $token])
+            ->putJson('/api/profile/password', [
+                'current_password'      => 'password_salah',
+                'password'              => 'newpassword123',
+                'password_confirmation' => 'newpassword123',
+            ]);
+
+        $response->assertStatus(422);
+    }
+
+    /**
      * Update password gagal jika konfirmasi tidak cocok.
      */
     public function test_password_update_fails_when_confirmation_mismatch()
     {
-        $user  = User::factory()->create(['role' => 'guest']);
+        $user  = User::factory()->create([
+            'password' => Hash::make('oldpassword123'),
+            'role'     => 'guest',
+        ]);
         $token = $user->createToken('auth-token')->plainTextToken;
 
         $response = $this->withHeaders(['Authorization' => 'Bearer ' . $token])
-            ->putJson('/api/profile', [
+            ->putJson('/api/profile/password', [
+                'current_password'      => 'oldpassword123',
                 'password'              => 'newpassword123',
                 'password_confirmation' => 'BERBEDA999',
             ]);

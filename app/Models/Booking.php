@@ -34,6 +34,8 @@ class Booking extends Model
         'guest_phone',
         'guest_email',
         'payment_method',
+        'snap_token',
+        'midtrans_order_id',
         'paid_at',
         'checked_in_at',
         'checked_out_at',

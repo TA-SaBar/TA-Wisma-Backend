@@ -19,7 +19,7 @@ class FacilityFactory extends Factory
     {
         return [
             'name' => 'Fasilitas ' . fake()->unique()->words(2, true),
-            'type' => fake()->randomElement(['kamar', 'ruang_rapat']),
+            'type' => fake()->randomElement(['Buah', 'Bunga', 'Rapat']),
             'gedung' => fake()->randomElement(['Wing A', 'Wing B', 'Gedung Utama']),
             'lantai' => 'Lantai ' . fake()->numberBetween(1, 15),
             'capacity' => fake()->numberBetween(2, 100),

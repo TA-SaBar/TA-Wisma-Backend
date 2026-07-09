@@ -41,7 +41,7 @@ class FacilityCrudTest extends TestCase
             'Authorization' => 'Bearer ' . $token,
         ])->postJson('/api/facilities', [
             'name' => 'Kamar Deluxe',
-            'type' => 'kamar',
+            'type' => 'Buah',
             'gedung' => 'Wing A',
             'lantai' => 'Lantai 1',
             'capacity' => 2,
@@ -69,7 +69,7 @@ class FacilityCrudTest extends TestCase
             'Authorization' => 'Bearer ' . $token,
         ])->postJson('/api/facilities', [
             'name' => 'Kamar Deluxe',
-            'type' => 'kamar',
+            'type' => 'Buah',
             'gedung' => 'Wing A',
             'lantai' => 'Lantai 1',
             'capacity' => 2,

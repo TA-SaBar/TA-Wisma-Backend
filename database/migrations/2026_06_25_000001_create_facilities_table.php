@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('facilities', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('type', ['kamar', 'ruang_rapat']);
+            $table->enum('type', ['Buah', 'Bunga', 'Rapat']);
             $table->string('gedung');
             $table->string('lantai');
             $table->integer('capacity');
