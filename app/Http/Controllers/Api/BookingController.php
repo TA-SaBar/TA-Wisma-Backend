@@ -58,6 +58,15 @@ class BookingController extends Controller
 
         $bookings = $query->get();
 
+        // Auto-expire pending bookings older than 60 minutes
+        $now = now();
+        foreach ($bookings as $b) {
+            if ($b->status === 'pending' && $b->created_at->diffInMinutes($now) >= 60) {
+                $b->update(['status' => 'cancelled']);
+                // Status is updated on the object dynamically for this response too
+            }
+        }
+
         return response()->json([
             'success' => true,
             'data'    => $bookings,
@@ -135,6 +144,11 @@ class BookingController extends Controller
                     'email'      => $data['guest_email'] ?? $user->email,
                     'phone'      => $data['guest_phone'] ?? $user->phone,
                 ],
+                'custom_expiry' => [
+                    'start_time' => now()->format('Y-m-d H:i:s O'),
+                    'unit'       => 'minute',
+                    'duration'   => 60,
+                ],
             ]);
 
             $booking->update(['snap_token' => $snapToken]);
@@ -198,7 +212,95 @@ class BookingController extends Controller
 
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
+            \Log::error('Midtrans Webhook Error: ' . $e->getMessage());
+            
+            // Jika ini dari tombol "Test Connection" di dashboard Midtrans, 
+            // payload dummy yang dikirimkan seringkali gagal validasi signature,
+            // atau mencoba mencari transaksi palsu yang berujung pada error 404.
+            $errMessage = strtolower($e->getMessage());
+            if (
+                str_contains($errMessage, 'signature key') || 
+                str_contains($errMessage, 'failed to parse') || 
+                str_contains($errMessage, 'transaction doesn\'t exist') ||
+                str_contains($errMessage, '404')
+            ) {
+                return response()->json(['message' => 'Test connection received (dummy data ignored).'], 200);
+            }
+
             return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Check payment status manually via Midtrans API
+     *
+     * POST /api/bookings/{booking}/check-status
+     */
+    public function checkStatus(Request $request, Booking $booking): JsonResponse
+    {
+        if ($booking->status === 'pending' && $booking->created_at->diffInMinutes(now()) >= 60) {
+            $booking->update(['status' => 'cancelled']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Batas waktu pembayaran telah habis. Booking ini dibatalkan.',
+                'data' => $booking
+            ]);
+        }
+
+        if ($booking->status !== 'pending') {
+            return response()->json([
+                'success' => true,
+                'message' => 'Status booking sudah ' . $booking->status,
+                'data' => $booking
+            ]);
+        }
+
+        try {
+            $status = \Midtrans\Transaction::status($booking->midtrans_order_id);
+            $transactionStatus = $status->transaction_status;
+            $fraudStatus = $status->fraud_status ?? null;
+
+            if ($transactionStatus === 'capture' || $transactionStatus === 'settlement') {
+                if ($fraudStatus === 'accept' || $transactionStatus === 'settlement') {
+                    $booking->update([
+                        'status'         => 'lunas',
+                        'payment_method' => $status->payment_type ?? null,
+                        'paid_at'        => now(),
+                    ]);
+
+                    Notification::create([
+                        'user_id' => $booking->user_id,
+                        'type'    => 'payment',
+                        'title'   => 'Pembayaran Berhasil',
+                        'message' => "Pembayaran untuk booking {$booking->booking_code} telah berhasil melalui pengecekan manual. Silakan check-in sesuai jadwal.",
+                        'is_read' => false,
+                    ]);
+                }
+            } elseif ($transactionStatus === 'cancel' || $transactionStatus === 'deny' || $transactionStatus === 'expire') {
+                $booking->update(['status' => 'cancelled']);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status terbaru berhasil ditarik dari Midtrans.',
+                'data' => $booking->fresh()
+            ]);
+        } catch (\Exception $e) {
+            $errMessage = strtolower($e->getMessage());
+            
+            // Jika transaksi belum dibuat/dibayar di Midtrans, API akan melempar 404
+            if (str_contains($errMessage, '404') || str_contains($errMessage, 'transaction doesn\'t exist')) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Pembayaran belum dimulai atau belum tercatat di sistem Midtrans. Silakan selesaikan pembayaran terlebih dahulu.',
+                    'data' => $booking
+                ], 200); // 200 OK agar frontend menampilkannya sebagai info, bukan error fatal
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengecek status: ' . $e->getMessage()
+            ], 500);
         }
     }
 

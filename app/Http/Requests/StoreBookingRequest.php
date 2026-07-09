@@ -47,4 +47,37 @@ class StoreBookingRequest extends FormRequest
             'guest_name.required'    => 'Nama tamu wajib diisi.',
         ];
     }
+
+    /**
+     * Configure the validator instance.
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $facilityId = $this->input('facility_id');
+            $checkIn = $this->input('check_in');
+            $checkOut = $this->input('check_out');
+
+            if ($facilityId && $checkIn && $checkOut) {
+                // Check if any booking overlaps with the requested dates
+                // Overlap condition:
+                // Existing booking check_in < Requested check_out AND Existing check_out > Requested check_in
+                $conflict = \App\Models\Booking::where('facility_id', $facilityId)
+                    ->where(function ($q) {
+                        $q->whereIn('status', ['lunas', 'check_in'])
+                          ->orWhere(function ($q2) {
+                              $q2->where('status', 'pending')
+                                 ->where('created_at', '>=', now()->subMinutes(60));
+                          });
+                    })
+                    ->where('check_in', '<', $checkOut)
+                    ->where('check_out', '>', $checkIn)
+                    ->exists();
+
+                if ($conflict) {
+                    $validator->errors()->add('check_in', 'Fasilitas sudah dipesan pada rentang tanggal tersebut. Silakan pilih tanggal lain.');
+                }
+            }
+        });
+    }
 }

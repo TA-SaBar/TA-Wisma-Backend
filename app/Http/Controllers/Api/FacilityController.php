@@ -108,6 +108,29 @@ class FacilityController extends Controller
     }
 
     /**
+     * Display the booked dates for a specific facility.
+     *
+     * GET /api/facilities/{id}/booked-dates
+     */
+    public function bookedDates(Facility $facility): JsonResponse
+    {
+        $bookings = \App\Models\Booking::where('facility_id', $facility->id)
+            ->where(function ($q) {
+                $q->whereIn('status', ['lunas', 'check_in'])
+                  ->orWhere(function ($q2) {
+                      $q2->where('status', 'pending')
+                         ->where('created_at', '>=', now()->subMinutes(60));
+                  });
+            })
+            ->get(['check_in', 'check_out']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $bookings
+        ]);
+    }
+
+    /**
      * Update the specified facility.
      *
      * PUT /api/facilities/{id} (Admin only)

@@ -2,10 +2,13 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\ComplaintController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\FacilityController;
+use App\Http\Controllers\Api\FeedbackController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\ReportController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 |
 | Iterasi 1: Auth + Profil + Facility CRUD
 | Iterasi 2: Booking + Midtrans + Check-in/out + Dashboard
+| Iterasi 3: Keluhan + Rating/Feedback + Laporan Keuangan + Data Induk
 |
 */
 
@@ -35,7 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 
-    // --- Profil (FR-02) — semua role bisa update profil sendiri ---
+    // --- Profil (FR-02) — semua role ---
     Route::put('/profile', [ProfileController::class, 'update']);
     Route::put('/profile/password', [ProfileController::class, 'updatePassword']);
 
@@ -46,11 +50,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // --- Dashboard Stats (FR-04) ---
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 
-    // --- Facilities (Read — semua role bisa akses) ---
+    // --- Facilities Read (semua role) ---
     Route::get('/facilities', [FacilityController::class, 'index']);
     Route::get('/facilities/{facility}', [FacilityController::class, 'show']);
+    Route::get('/facilities/{facility}/booked-dates', [FacilityController::class, 'bookedDates']);
 
-    // --- Facilities (CUD — hanya koordinator wisma) ---
+    // --- Facilities CUD (hanya koordinator wisma) ---
     Route::middleware('role:koordinator_wisma')->group(function () {
         Route::post('/facilities', [FacilityController::class, 'store']);
         Route::put('/facilities/{facility}', [FacilityController::class, 'update']);
@@ -60,10 +65,38 @@ Route::middleware('auth:sanctum')->group(function () {
     // --- Bookings (FR-06, FR-07) ---
     Route::get('/bookings', [BookingController::class, 'index']);
     Route::post('/bookings', [BookingController::class, 'store']);
+    Route::post('/bookings/{booking}/check-status', [BookingController::class, 'checkStatus']);
+
+    // --- Feedback per Booking (FR-08) — hanya guest pemilik booking ---
+    Route::post('/bookings/{booking}/feedback', [FeedbackController::class, 'store']);
 
     // --- Check-in & Check-out (FR-09) — hanya resepsionis ---
     Route::middleware('role:receptionist')->group(function () {
         Route::put('/bookings/{booking}/checkin', [BookingController::class, 'checkIn']);
         Route::put('/bookings/{booking}/checkout', [BookingController::class, 'checkOut']);
+    });
+
+    // --- Keluhan / Complaints (FR-08 Guest, FR-13 CS) ---
+    Route::get('/complaints', [ComplaintController::class, 'index']);
+    Route::post('/complaints', [ComplaintController::class, 'store']);
+
+    // --- Proses & Selesaikan Keluhan (FR-13) — hanya customer_service & koordinator ---
+    Route::middleware('role:customer_service,koordinator_wisma')->group(function () {
+        Route::put('/complaints/{complaint}/process', [ComplaintController::class, 'process']);
+        Route::put('/complaints/{complaint}/resolve', [ComplaintController::class, 'resolve']);
+        // FR-13.06: Buat tiket keluhan manual (tamu melapor offline)
+        Route::post('/complaints/manual', [ComplaintController::class, 'storeManual']);
+    });
+
+    // --- Feedback Aggregation (FR-13) — hanya customer_service & koordinator ---
+    Route::middleware('role:customer_service,koordinator_wisma')->group(function () {
+        Route::get('/feedbacks', [FeedbackController::class, 'index']);
+    });
+
+    // --- Laporan Keuangan & Data Induk (FR-11, FR-12) — hanya koordinator wisma ---
+    Route::middleware('role:koordinator_wisma')->group(function () {
+        Route::get('/reports/financial', [ReportController::class, 'financial']);
+        Route::get('/reports/master-guests', [ReportController::class, 'masterGuests']);
+        Route::get('/reports/booking-logs', [ReportController::class, 'bookingLogs']);
     });
 });

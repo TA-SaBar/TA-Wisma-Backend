@@ -61,6 +61,16 @@ class Booking extends Model
         ];
     }
 
+    protected $appends = ['has_feedback'];
+
+    /**
+     * Get the has_feedback attribute to indicate if the booking has feedback.
+     */
+    public function getHasFeedbackAttribute(): bool
+    {
+        return $this->feedback()->exists();
+    }
+
     /**
      * Generate a unique booking code.
      */
