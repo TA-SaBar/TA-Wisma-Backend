@@ -19,7 +19,7 @@ class FeedbackController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $feedbacks = Feedback::with(['booking', 'user'])->latest()->get();
+        $feedbacks = Feedback::with(['booking.facility', 'user'])->latest()->get();
 
         // Agregasi rata-rata keseluruhan
         $aggregation = [
@@ -93,5 +93,27 @@ class FeedbackController extends Controller
             'message' => 'Terima kasih! Ulasan Anda berhasil dikirim.',
             'data'    => $feedback,
         ], 201);
+    }
+
+    /**
+     * Cetak PDF Laporan Ulasan
+     *
+     * GET /api/feedbacks/export-pdf
+     */
+    public function exportPdf(Request $request)
+    {
+        $feedbacks = Feedback::with(['booking.facility', 'user'])->latest()->get();
+
+        $aggregation = [
+            'total'               => $feedbacks->count(),
+            'avg_cleanliness'     => $feedbacks->avg('rating_cleanliness'),
+            'avg_facilities'      => $feedbacks->avg('rating_facilities'),
+            'avg_service'         => $feedbacks->avg('rating_service'),
+            'avg_overall'         => $feedbacks->avg('average_rating'),
+        ];
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.feedbacks', compact('feedbacks', 'aggregation', 'request'))->setPaper('a4', 'landscape');
+        
+        return $pdf->download('laporan-ulasan-' . date('Ymd') . '.pdf');
     }
 }

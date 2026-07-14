@@ -49,6 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // --- Dashboard Stats (FR-04) ---
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('/guests', [ReportController::class, 'masterGuests']);
 
     // --- Facilities Read (semua role) ---
     Route::get('/facilities', [FacilityController::class, 'index']);
@@ -76,6 +77,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/bookings/{booking}/checkout', [BookingController::class, 'checkOut']);
     });
 
+    // --- Unduh Tiket PDF (FR-07.02) ---
+    Route::get('/bookings/{booking}/ticket', [BookingController::class, 'exportTicketPdf']);
+
     // --- Keluhan / Complaints (FR-08 Guest, FR-13 CS) ---
     Route::get('/complaints', [ComplaintController::class, 'index']);
     Route::post('/complaints', [ComplaintController::class, 'store']);
@@ -93,9 +97,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/feedbacks', [FeedbackController::class, 'index']);
     });
 
+    // --- Cetak Laporan PDF (Khusus Customer Service) ---
+    Route::middleware('role:customer_service')->group(function () {
+        Route::get('/complaints/export-pdf', [ComplaintController::class, 'exportPdf']);
+        Route::get('/feedbacks/export-pdf', [FeedbackController::class, 'exportPdf']);
+    });
+
     // --- Laporan Keuangan & Data Induk (FR-11, FR-12) — hanya koordinator wisma ---
     Route::middleware('role:koordinator_wisma')->group(function () {
         Route::get('/reports/financial', [ReportController::class, 'financial']);
+        Route::get('/reports/financial/export-pdf', [ReportController::class, 'exportFinancialPdf']);
         Route::get('/reports/master-guests', [ReportController::class, 'masterGuests']);
         Route::get('/reports/booking-logs', [ReportController::class, 'bookingLogs']);
     });

@@ -86,6 +86,42 @@ class ReportController extends Controller
     }
 
     /**
+     * Unduh Laporan PDF (Koordinator Wisma).
+     *
+     * GET /api/reports/financial/export-pdf
+     */
+    public function exportFinancialPdf(Request $request)
+    {
+        $query = Booking::with(['facility', 'user'])->latest();
+
+        if ($request->filled('status') && $request->status !== 'semua') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->whereBetween('check_in', [
+                Carbon::parse($request->start_date)->startOfDay(),
+                Carbon::parse($request->end_date)->endOfDay(),
+            ]);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('guest_name', 'like', '%' . $search . '%')
+                  ->orWhere('guest_nip', 'like', '%' . $search . '%')
+                  ->orWhere('booking_code', 'like', '%' . $search . '%');
+            });
+        }
+
+        $bookings = $query->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.financial', compact('bookings', 'request'))->setPaper('a4', 'landscape');
+        
+        return $pdf->download('laporan-wisma-' . date('Ymd') . '.pdf');
+    }
+
+    /**
      * Database tamu (direktori akun tamu) & riwayat log transaksi reservasi.
      * Hanya Koordinator Wisma.
      *

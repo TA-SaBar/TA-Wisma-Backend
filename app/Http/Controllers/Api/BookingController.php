@@ -381,4 +381,30 @@ class BookingController extends Controller
             'data'    => $booking->fresh(['facility']),
         ]);
     }
+
+    /**
+     * Unduh tiket PDF (Guest).
+     *
+     * GET /api/bookings/{booking}/ticket
+     */
+    public function exportTicketPdf(Request $request, Booking $booking)
+    {
+        $user = $request->user();
+        if ($booking->user_id !== $user->id && !in_array($user->role, ['receptionist', 'koordinator_wisma'])) {
+            abort(403, 'Unauthorized access to this ticket.');
+        }
+
+        if (!in_array($booking->status, ['lunas', 'check_in', 'selesai'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tiket hanya dapat dicetak setelah pembayaran Lunas.',
+            ], 422);
+        }
+
+        $booking->load(['facility', 'user']);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.ticket', compact('booking'));
+        
+        return $pdf->download('E-Ticket-' . $booking->booking_code . '.pdf');
+    }
 }

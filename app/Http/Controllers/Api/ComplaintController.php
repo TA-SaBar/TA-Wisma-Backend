@@ -164,15 +164,15 @@ class ComplaintController extends Controller
     {
         $data = $request->validate([
             'title'       => ['required', 'string', 'max:255'],
-            'category'    => ['required', 'in:fasilitas,layanan,kebersihan,keamanan,lainnya'],
+            'category'    => ['required', 'in:facility,laundry,internet,food'],
             'location'    => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'guest_name'  => ['required', 'string', 'max:255'],
+            'user_id'     => ['required', 'exists:users,id'],
         ]);
 
         $complaint = Complaint::create([
             'complaint_code' => Complaint::generateComplaintCode(),
-            'user_id'        => null, // tidak terikat akun karena dilaporkan offline
+            'user_id'        => $data['user_id'],
             'title'          => $data['title'],
             'category'       => $data['category'],
             'location'       => $data['location'],
@@ -180,11 +180,45 @@ class ComplaintController extends Controller
             'status'         => 'pending',
             'resolved_by'    => null,
         ]);
+        
+        $complaint->load('user');
 
         return response()->json([
             'success' => true,
-            'message' => "Tiket keluhan manual ({$complaint->complaint_code}) berhasil dibuat atas nama {$data['guest_name']}.",
+            'message' => "Tiket keluhan manual ({$complaint->complaint_code}) berhasil dibuat atas nama {$complaint->user->name}.",
             'data'    => $complaint,
         ], 201);
+    }
+
+    /**
+     * Cetak PDF Laporan Keluhan
+     *
+     * GET /api/complaints/export-pdf
+     */
+    public function exportPdf(Request $request)
+    {
+        $query = Complaint::with('user')->latest();
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', '%' . $search . '%')
+                  ->orWhere('complaint_code', 'like', '%' . $search . '%');
+            });
+        }
+
+        $complaints = $query->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.complaints', compact('complaints', 'request'))->setPaper('a4', 'landscape');
+        
+        return $pdf->download('laporan-keluhan-' . date('Ymd') . '.pdf');
     }
 }
