@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -84,8 +84,11 @@
 <body>
 
     <div class="header">
-        <h1>LAPORAN REKAPITULASI KELUHAN TAMU</h1>
-        <p>Sistem Pelayanan Wisma DPR RI Kopo</p>
+        <img src="{{ public_path('images/logo.png') }}" alt="Logo" style="position: absolute; left: 0; top: 0; height: 45px;">
+        <div style="margin-left: 60px;">
+            <h1>LAPORAN REKAPITULASI KELUHAN TAMU</h1>
+            <p>Sistem Pelayanan Wisma DPR RI Kopo</p>
+        </div>
         
         <div class="meta">
             <p><strong>Dicetak Tanggal:</strong> {{ date('d/m/Y H:i') }}</p>

@@ -24,8 +24,7 @@ class StoreFacilityRequest extends FormRequest
         return [
             'name'        => ['required', 'string', 'max:255'],
             'type'        => ['required', 'in:Buah,Bunga,Rapat'],
-            'gedung'      => ['required', 'string', 'max:255'],
-            'lantai'      => ['required', 'string', 'max:255'],
+            'area'      => ['required', 'string', 'max:255'],
             'capacity'    => ['required', 'integer', 'min:1'],
             'price'       => ['required', 'numeric', 'min:0'],
             'unit'        => ['required', 'string', 'in:night,day,4_jam'],
@@ -47,8 +46,7 @@ class StoreFacilityRequest extends FormRequest
         return [
             'name.required' => 'Nama fasilitas wajib diisi.',
             'type.required' => 'Tipe fasilitas wajib dipilih.',
-            'gedung.required' => 'Gedung wajib diisi.',
-            'lantai.required' => 'Lantai wajib diisi.',
+            'area.required' => 'Area wajib diisi.',
             'capacity.required' => 'Kapasitas wajib diisi.',
             'capacity.min' => 'Kapasitas minimal 1 orang.',
             'price.required' => 'Harga wajib diisi.',

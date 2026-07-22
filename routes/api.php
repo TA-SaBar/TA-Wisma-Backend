@@ -45,7 +45,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // --- Notifikasi (FR-03) ---
     Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::put('/notifications/{id}/read', [NotificationController::class, 'markRead']);
     Route::put('/notifications/read-all', [NotificationController::class, 'markAllRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
 
     // --- Dashboard Stats (FR-04) ---
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
@@ -82,12 +84,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // --- Keluhan / Complaints (FR-08 Guest, FR-13 CS) ---
     Route::get('/complaints', [ComplaintController::class, 'index']);
+    Route::put('/complaints/{complaint}/confirm', [ComplaintController::class, 'confirm']);
     Route::post('/complaints', [ComplaintController::class, 'store']);
 
     // --- Proses & Selesaikan Keluhan (FR-13) — hanya customer_service & koordinator ---
     Route::middleware('role:customer_service,koordinator_wisma')->group(function () {
         Route::put('/complaints/{complaint}/process', [ComplaintController::class, 'process']);
         Route::put('/complaints/{complaint}/resolve', [ComplaintController::class, 'resolve']);
+        
         // FR-13.06: Buat tiket keluhan manual (tamu melapor offline)
         Route::post('/complaints/manual', [ComplaintController::class, 'storeManual']);
     });

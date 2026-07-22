@@ -116,8 +116,11 @@
 </head>
 <body>
     <div class="header">
-        <h1>Laporan Keuangan & Okupansi</h1>
-        <p>Wisma Sekretariat Jenderal DPR RI Kopo</p>
+        <img src="{{ public_path('images/logo.png') }}" alt="Logo" style="position: absolute; left: 0; top: 0; height: 45px;">
+        <div style="margin-left: 60px;">
+            <h1>Laporan Keuangan & Okupansi</h1>
+            <p>Wisma Sekretariat Jenderal DPR RI Kopo</p>
+        </div>
         <div class="meta">
             <p><strong>Dicetak pada:</strong><br>{{ now()->translatedFormat('d F Y, H:i') }}</p>
         </div>

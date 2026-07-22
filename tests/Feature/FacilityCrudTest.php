@@ -42,8 +42,7 @@ class FacilityCrudTest extends TestCase
         ])->postJson('/api/facilities', [
             'name' => 'Kamar Deluxe',
             'type' => 'Buah',
-            'gedung' => 'Wing A',
-            'lantai' => 'Lantai 1',
+                        'area' => 'Area Atas',
             'capacity' => 2,
             'price' => 500000,
             'unit' => 'night',
@@ -70,8 +69,7 @@ class FacilityCrudTest extends TestCase
         ])->postJson('/api/facilities', [
             'name' => 'Kamar Deluxe',
             'type' => 'Buah',
-            'gedung' => 'Wing A',
-            'lantai' => 'Lantai 1',
+                        'area' => 'Area Atas',
             'capacity' => 2,
             'price' => 500000,
             'unit' => 'night',

@@ -25,6 +25,7 @@ class Complaint extends Model
         'status',
         'resolved_by',
         'resolved_at',
+        'is_guest_confirmed',
     ];
 
     /**
@@ -36,6 +37,7 @@ class Complaint extends Model
     {
         return [
             'resolved_at' => 'datetime',
+            'is_guest_confirmed' => 'boolean',
         ];
     }
 

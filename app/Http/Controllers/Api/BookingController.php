@@ -205,6 +205,20 @@ class BookingController extends Controller
                         'message' => "Pembayaran untuk booking {$booking->booking_code} telah berhasil. Silakan check-in sesuai jadwal.",
                         'is_read' => false,
                     ]);
+                    // Kirim notifikasi ke resepsionis
+                    $receptionists = \App\Models\User::where('role', 'receptionist')->get();
+                    foreach ($receptionists as $rec) {
+                        \App\Models\Notification::create([
+                            'user_id' => $rec->id,
+                            'type'    => 'booking',
+                            'title'   => 'Pemesanan Baru (Lunas)',
+                            'message' => "Pemesanan baru {$booking->booking_code} telah lunas. Tamu dijadwalkan check-in pada {$booking->check_in}.",
+                            'related_id' => $booking->id,
+                            'related_type' => 'new_booking',
+                            'is_read' => false,
+                        ]);
+                    }
+
                 }
             } elseif ($transactionStatus === 'cancel' || $transactionStatus === 'deny' || $transactionStatus === 'expire') {
                 $booking->update(['status' => 'cancelled']);
@@ -275,6 +289,20 @@ class BookingController extends Controller
                         'message' => "Pembayaran untuk booking {$booking->booking_code} telah berhasil melalui pengecekan manual. Silakan check-in sesuai jadwal.",
                         'is_read' => false,
                     ]);
+                    // Kirim notifikasi ke resepsionis
+                    $receptionists = \App\Models\User::where('role', 'receptionist')->get();
+                    foreach ($receptionists as $rec) {
+                        \App\Models\Notification::create([
+                            'user_id' => $rec->id,
+                            'type'    => 'booking',
+                            'title'   => 'Pemesanan Baru (Lunas)',
+                            'message' => "Pemesanan baru {$booking->booking_code} telah lunas. Tamu dijadwalkan check-in pada {$booking->check_in}.",
+                            'related_id' => $booking->id,
+                            'related_type' => 'new_booking',
+                            'is_read' => false,
+                        ]);
+                    }
+
                 }
             } elseif ($transactionStatus === 'cancel' || $transactionStatus === 'deny' || $transactionStatus === 'expire') {
                 $booking->update(['status' => 'cancelled']);

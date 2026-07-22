@@ -48,6 +48,7 @@ class ComplaintController extends Controller
 
         $complaints = $query->get();
 
+
         return response()->json([
             'success' => true,
             'data'    => $complaints,
@@ -74,6 +75,9 @@ class ComplaintController extends Controller
             'description'    => $data['description'] ?? null,
             'status'         => 'pending',
         ]);
+
+
+
 
         return response()->json([
             'success' => true,
@@ -109,6 +113,9 @@ class ComplaintController extends Controller
             ]);
         }
 
+
+
+
         return response()->json([
             'success' => true,
             'message' => "Keluhan {$complaint->complaint_code} berhasil ditandai sedang diproses.",
@@ -136,21 +143,57 @@ class ComplaintController extends Controller
             'resolved_at' => now(),
         ]);
 
-        // Kirim notifikasi ke pelapor
-        if ($complaint->user_id) {
-            Notification::create([
-                'user_id' => $complaint->user_id,
-                'type'    => 'complaint',
-                'title'   => 'Keluhan Telah Diselesaikan',
-                'message' => "Keluhan Anda ({$complaint->complaint_code}) telah berhasil diselesaikan. Terima kasih atas laporan Anda.",
-                'is_read' => false,
-            ]);
-        }
+        // Buat notifikasi untuk tamu agar melakukan konfirmasi
+        \App\Models\Notification::create([
+            'user_id' => $complaint->user_id,
+            'type'    => 'info',
+            'title'   => 'Konfirmasi Penyelesaian Keluhan',
+            'message' => "Keluhan Anda ({$complaint->complaint_code}) di {$complaint->location} telah diselesaikan oleh tim teknis. Mohon konfirmasi apakah masalah telah benar-benar teratasi.",
+            'related_id' => $complaint->id,
+            'related_type' => 'complaint_confirmation'
+        ]);
+
+
+
 
         return response()->json([
             'success' => true,
-            'message' => "Keluhan {$complaint->complaint_code} telah berhasil diselesaikan.",
+            'message' => "Keluhan {$complaint->complaint_code} telah berhasil diselesaikan dan menunggu konfirmasi tamu.",
             'data'    => $complaint->fresh('user'),
+        ]);
+    }
+
+    /**
+     * PUT /api/complaints/{complaint}/confirm
+     * Konfirmasi 2 arah (Tamu mengonfirmasi keluhan sudah benar-benar selesai).
+     */
+    public function confirm(Request $request, Complaint $complaint): JsonResponse
+    {
+        if ($complaint->status !== 'resolved') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Keluhan belum diselesaikan oleh petugas.',
+            ], 400);
+        }
+
+        if ($complaint->user_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak berhak mengonfirmasi keluhan ini.',
+            ], 403);
+        }
+
+        $complaint->update([
+            'is_guest_confirmed' => true,
+        ]);
+
+
+
+
+        return response()->json([
+            'success' => true,
+            'data'    => $complaint,
+            'message' => 'Terima kasih, konfirmasi penyelesaian keluhan berhasil disimpan.',
         ]);
     }
 
@@ -182,6 +225,9 @@ class ComplaintController extends Controller
         ]);
         
         $complaint->load('user');
+
+
+
 
         return response()->json([
             'success' => true,

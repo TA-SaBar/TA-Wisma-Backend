@@ -97,7 +97,8 @@
 </head>
 <body>
     <div class="wrapper">
-        <div class="header">
+        <div class="header" style="position: relative;">
+            <img src="{{ public_path('images/logo.png') }}" alt="Logo" style="position: absolute; left: 20px; top: 15px; height: 50px;">
             <h1>Wisma DPR RI Kopo</h1>
             <p>E-Ticket / Boarding Pass Tamu Resmi</p>
         </div>

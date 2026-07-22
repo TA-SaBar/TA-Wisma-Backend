@@ -21,19 +21,38 @@ class ReportController extends Controller
     public function financial(Request $request): JsonResponse
     {
         $request->validate([
-            'start_date' => ['required', 'date'],
-            'end_date'   => ['required', 'date', 'after_or_equal:start_date'],
+            'start_date' => ['nullable', 'date'],
+            'end_date'   => ['nullable', 'date', 'after_or_equal:start_date'],
         ]);
 
-        $startDate = Carbon::parse($request->start_date)->startOfDay();
-        $endDate   = Carbon::parse($request->end_date)->endOfDay();
-
-        // Query booking yang sudah lunas dalam periode
-        $bookings = Booking::with(['facility', 'user'])
+        $query = Booking::with(['facility', 'user'])
             ->whereIn('status', ['lunas', 'check_in', 'selesai'])
-            ->whereBetween('paid_at', [$startDate, $endDate])
-            ->orderBy('paid_at')
-            ->get();
+            ->orderBy('paid_at');
+
+        if ($request->filled('status') && $request->status !== 'semua') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('guest_name', 'like', '%' . $search . '%')
+                  ->orWhere('guest_nip', 'like', '%' . $search . '%')
+                  ->orWhere('booking_code', 'like', '%' . $search . '%')
+                  ->orWhereHas('user', function ($qu) use ($search) {
+                      $qu->where('name', 'like', '%' . $search . '%')
+                         ->orWhere('nip', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $startDate = Carbon::parse($request->start_date)->startOfDay();
+            $endDate   = Carbon::parse($request->end_date)->endOfDay();
+            $query->whereBetween('paid_at', [$startDate, $endDate]);
+        }
+
+        $bookings = $query->get();
 
         // Kalkulasi agregat keuangan
         $totalPendapatan = $bookings->sum('total_price');
@@ -67,8 +86,8 @@ class ReportController extends Controller
             'success' => true,
             'data'    => [
                 'periode' => [
-                    'start_date' => $startDate->toDateString(),
-                    'end_date'   => $endDate->toDateString(),
+                    'start_date' => isset($startDate) ? $startDate->toDateString() : 'Semua',
+                    'end_date'   => isset($endDate) ? $endDate->toDateString() : 'Waktu',
                 ],
                 'ringkasan' => [
                     'total_pendapatan' => (float) $totalPendapatan,

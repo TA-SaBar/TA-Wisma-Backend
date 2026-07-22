@@ -21,7 +21,7 @@ class FacilityController extends Controller
      * - status: READY, OCCUPIED, CLEANING, MAINTENANCE
      * - type: kamar, ruang_rapat
      * - gedung: string
-     * - lantai: string
+     * - area: string
      * - search: string (name search)
      */
     public function index(Request $request): JsonResponse
@@ -30,7 +30,7 @@ class FacilityController extends Controller
 
         // BUG ITERASI 1 SUDAH DIPERBAIKI:
         // Sebelumnya, blok filter status me-return lebih awal sehingga filter
-        // type, gedung, lantai, dan search diabaikan ketika status diisi.
+        // type, gedung, area, dan search diabaikan ketika status diisi.
         // Sekarang semua filter dibangun secara berantai sebelum query dieksekusi.
 
         // Filter by status
@@ -43,14 +43,9 @@ class FacilityController extends Controller
             $query->where('type', $request->type);
         }
 
-        // Filter by gedung
-        if ($request->has('gedung') && $request->gedung !== '') {
-            $query->where('gedung', $request->gedung);
-        }
-
-        // Filter by lantai
-        if ($request->has('lantai') && $request->lantai !== '') {
-            $query->where('lantai', $request->lantai);
+        // Filter by area (formerly area)
+        if ($request->has('area') && $request->area !== '') {
+            $query->where('area', $request->area);
         }
 
         // Search by name or description

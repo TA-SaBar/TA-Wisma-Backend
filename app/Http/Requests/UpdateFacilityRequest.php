@@ -24,8 +24,7 @@ class UpdateFacilityRequest extends FormRequest
         return [
             'name'        => ['sometimes', 'required', 'string', 'max:255'],
             'type'        => ['sometimes', 'required', 'in:Buah,Bunga,Rapat'],
-            'gedung'      => ['sometimes', 'required', 'string', 'max:255'],
-            'lantai'      => ['sometimes', 'required', 'string', 'max:255'],
+            'area'      => ['sometimes', 'required', 'string', 'max:255'],
             'capacity'    => ['sometimes', 'required', 'integer', 'min:1'],
             'price'       => ['sometimes', 'required', 'numeric', 'min:0'],
             'unit'        => ['sometimes', 'required', 'string', 'in:night,day,4_jam'],
@@ -46,6 +45,7 @@ class UpdateFacilityRequest extends FormRequest
     {
         return [
             'name.required' => 'Nama fasilitas wajib diisi.',
+            'area.required' => 'Area wajib diisi.',
             'type.in'       => 'Tipe fasilitas harus Buah, Bunga, atau Rapat.',
             'capacity.min'  => 'Kapasitas minimal 1 orang.',
             'price.min'     => 'Harga tidak boleh negatif.',

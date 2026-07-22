@@ -88,6 +88,20 @@ class FeedbackController extends Controller
             'comment'            => $data['comment'] ?? null,
         ]);
 
+
+        // Kirim Notifikasi ke Customer Service
+        $csUsers = \App\Models\User::where('role', 'customer_service')->get();
+        foreach ($csUsers as $cs) {
+            \App\Models\Notification::create([
+                'user_id'      => $cs->id,
+                'type'         => 'rating',
+                'title'        => 'Ulasan & Rating Baru',
+                'message'      => "Tamu {$user->name} memberikan ulasan baru dengan skor rata-rata {$avgRating} Bintang.",
+                'related_id'   => $feedback->id,
+                'related_type' => 'new_rating',
+            ]);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Terima kasih! Ulasan Anda berhasil dikirim.',

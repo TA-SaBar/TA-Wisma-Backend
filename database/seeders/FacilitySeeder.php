@@ -36,8 +36,7 @@ class FacilitySeeder extends Seeder
                 [
                     'name'        => 'Bungalow ' . $name,
                     'type'        => 'Buah',
-                    'gedung'      => 'Wisma',
-                    'lantai'      => 'Area Bawah',
+                                        'area'      => 'Area Bawah',
                     'capacity'    => 2,
                     'price'       => 387000,
                     'unit'        => 'night',
@@ -61,8 +60,7 @@ class FacilitySeeder extends Seeder
                 [
                     'name'        => 'Bungalow ' . $name,
                     'type'        => 'Bunga',
-                    'gedung'      => 'Wisma',
-                    'lantai'      => 'Area Atas',
+                                        'area'      => 'Area Atas',
                     'capacity'    => 2,
                     'price'       => 549000,
                     'unit'        => 'night',
@@ -70,7 +68,7 @@ class FacilitySeeder extends Seeder
                     'bed'         => 'Twin Bed',
                     'status'      => $status,
                     'photo'       => '/images/bungalow_bunga.jpg',
-                    'description' => 'Bungalow Standard tipe Bunga yang tenang dan bersih di lantai atas, dilengkapi dengan Twin Bed, AC, TV, Wi-Fi, dan pemandangan luar wisma.',
+                    'description' => 'Bungalow Standard tipe Bunga yang tenang dan bersih di area atas, dilengkapi dengan Twin Bed, AC, TV, Wi-Fi, dan pemandangan luar wisma.',
                 ]
             );
         }
@@ -81,8 +79,7 @@ class FacilitySeeder extends Seeder
             [
                 'name'        => 'Ruang Panja (Rapat)',
                 'type'        => 'Rapat',
-                'gedung'      => 'Wisma',
-                'lantai'      => 'Area Bawah',
+                                'area'      => 'Area Bawah',
                 'capacity'    => 30,
                 'price'       => 250000,
                 'unit'        => 'day',

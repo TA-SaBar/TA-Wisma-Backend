@@ -20,8 +20,7 @@ class Facility extends Model
     protected $fillable = [
         'name',
         'type',
-        'gedung',
-        'lantai',
+        'area',
         'capacity',
         'price',
         'unit',
