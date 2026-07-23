@@ -20,8 +20,7 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        'http://localhost:8001', // CORS for Frontend
-        '*'
+        env('FRONTEND_URL', 'http://localhost:8001'),
     ],
 
     'allowed_origins_patterns' => [],
