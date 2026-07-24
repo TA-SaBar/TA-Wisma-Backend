@@ -21,10 +21,18 @@ class StoreBookingRequest extends FormRequest
      */
     public function rules(): array
     {
+        $facilityId = $this->input('facility_id');
+        $facility = \App\Models\Facility::find($facilityId);
+
+        $checkOutRule = 'after:check_in';
+        if ($facility && $facility->unit === 'day') {
+            $checkOutRule = 'after_or_equal:check_in';
+        }
+
         return [
             'facility_id' => ['required', 'exists:facilities,id'],
             'check_in'    => ['required', 'date', 'after_or_equal:today'],
-            'check_out'   => ['required', 'date', 'after:check_in'],
+            'check_out'   => ['required', 'date', $checkOutRule],
             'guest_name'  => ['required', 'string', 'max:255'],
             'guest_nip'   => ['nullable', 'string', 'max:50'],
             'guest_phone' => ['nullable', 'string', 'max:20'],
@@ -44,6 +52,7 @@ class StoreBookingRequest extends FormRequest
             'check_in.after_or_equal'=> 'Tanggal check-in tidak boleh sebelum hari ini.',
             'check_out.required'     => 'Tanggal check-out wajib diisi.',
             'check_out.after'        => 'Tanggal check-out harus setelah check-in.',
+            'check_out.after_or_equal'=> 'Tanggal check-out tidak boleh sebelum check-in.',
             'guest_name.required'    => 'Nama tamu wajib diisi.',
         ];
     }
@@ -59,22 +68,27 @@ class StoreBookingRequest extends FormRequest
             $checkOut = $this->input('check_out');
 
             if ($facilityId && $checkIn && $checkOut) {
-                // Check if any booking overlaps with the requested dates
-                // Overlap condition:
-                // Existing booking check_in < Requested check_out AND Existing check_out > Requested check_in
-                $conflict = \App\Models\Booking::where('facility_id', $facilityId)
+                $facility = \App\Models\Facility::find($facilityId);
+                if (!$facility) return;
+
+                $conflictQuery = \App\Models\Booking::where('facility_id', $facilityId)
                     ->where(function ($q) {
                         $q->whereIn('status', ['lunas', 'check_in'])
                           ->orWhere(function ($q2) {
                               $q2->where('status', 'pending')
                                  ->where('created_at', '>=', now()->subMinutes(60));
                           });
-                    })
-                    ->where('check_in', '<', $checkOut)
-                    ->where('check_out', '>', $checkIn)
-                    ->exists();
+                    });
 
-                if ($conflict) {
+                if ($facility->unit === 'day') {
+                    $conflictQuery->where('check_in', '<=', $checkOut)
+                                  ->where('check_out', '>=', $checkIn);
+                } else {
+                    $conflictQuery->where('check_in', '<', $checkOut)
+                                  ->where('check_out', '>', $checkIn);
+                }
+
+                if ($conflictQuery->exists()) {
                     $validator->errors()->add('check_in', 'Fasilitas sudah dipesan pada rentang tanggal tersebut. Silakan pilih tanggal lain.');
                 }
             }

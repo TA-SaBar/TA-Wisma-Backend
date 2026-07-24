@@ -98,6 +98,12 @@ class BookingController extends Controller
         $checkOut = Carbon::parse($data['check_out']);
         $nights   = $checkIn->diffInDays($checkOut);
 
+        if ($facility->unit === 'day') {
+            $nights += 1;
+        } else {
+            if ($nights === 0) $nights = 1;
+        }
+
         if ($nights < 1) {
             return response()->json([
                 'success' => false,
@@ -145,6 +151,12 @@ class BookingController extends Controller
                         'price'    => (int) round($facility->price),
                         'quantity' => $nights,
                         'name'     => $facility->name . ' (' . $nights . ' malam/hari)',
+                    ],
+                    [
+                        'id'       => 'TAX-11',
+                        'price'    => (int) round($tax),
+                        'quantity' => 1,
+                        'name'     => 'Pajak PPN (11%)',
                     ],
                 ],
                 'customer_details' => [
@@ -216,11 +228,12 @@ class BookingController extends Controller
                     // Kirim notifikasi ke resepsionis
                     $receptionists = \App\Models\User::where('role', 'receptionist')->get();
                     foreach ($receptionists as $rec) {
+                        $formattedCheckIn = \Carbon\Carbon::parse($booking->check_in)->translatedFormat('l, d F Y');
                         \App\Models\Notification::create([
                             'user_id' => $rec->id,
                             'type'    => 'booking',
                             'title'   => 'Pemesanan Baru (Lunas)',
-                            'message' => "Pemesanan baru {$booking->booking_code} telah lunas. Tamu dijadwalkan check-in pada {$booking->check_in}.",
+                            'message' => "Pemesanan baru {$booking->booking_code} telah lunas. Tamu dijadwalkan check-in pada {$formattedCheckIn}",
                             'related_id' => $booking->id,
                             'related_type' => 'new_booking',
                             'is_read' => false,

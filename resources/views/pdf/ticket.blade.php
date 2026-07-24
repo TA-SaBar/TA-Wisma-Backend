@@ -120,26 +120,26 @@
                     <td class="label">Unit Fasilitas</td>
                     <td class="value">
                         {{ $booking->facility->name ?? '-' }}
-                        <span class="sub-text">{{ $booking->facility->gedung ?? '-' }}</span>
+                        <span class="sub-text">{{ $booking->facility->area ?? '-' }}</span>
                     </td>
                 </tr>
                 <tr>
                     <td class="label">Jadwal Kedatangan</td>
                     <td class="value">
                         {{ \Carbon\Carbon::parse($booking->check_in)->translatedFormat('l, d F Y') }}
-                        <span class="sub-text">Waktu Check-in: Mulai 14:00 WIB</span>
+                        <span class="sub-text">{{ ($booking->facility->unit == 'night') ? 'Waktu Check-in: Mulai 14:00 WIB' : ''}}</span> 
                     </td>
                 </tr>
                 <tr>
                     <td class="label">Jadwal Kepulangan</td>
                     <td class="value">
                         {{ \Carbon\Carbon::parse($booking->check_out)->translatedFormat('l, d F Y') }}
-                        <span class="sub-text">Waktu Check-out: Maksimal 12:00 WIB</span>
+                        <span class="sub-text">{{ ($booking->facility->unit == 'night') ? 'Waktu Check-out: Maksimal 12:00 WIB' : ''}}</span> 
                     </td>
                 </tr>
                 <tr>
                     <td class="label" style="border-bottom: none;">Durasi Menginap</td>
-                    <td class="value" style="border-bottom: none;">{{ $booking->nights }} Malam/Hari</td>
+                    <td class="value" style="border-bottom: none;">{{ $booking->nights }} {{ ($booking->facility->unit ?? 'night') === 'day' ? 'Hari' : 'Malam' }}</td>
                 </tr>
             </table>
         </div>
