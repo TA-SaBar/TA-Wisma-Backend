@@ -76,8 +76,17 @@ class ComplaintController extends Controller
             'status'         => 'pending',
         ]);
 
-
-
+        // Kirim notifikasi ke Customer Service
+        $csUsers = \App\Models\User::where('role', 'customer_service')->get();
+        foreach ($csUsers as $cs) {
+            \App\Models\Notification::create([
+                'user_id' => $cs->id,
+                'type'    => 'complaint',
+                'title'   => 'Keluhan Baru',
+                'message' => "Tamu {$user->name} mengajukan keluhan baru: {$complaint->title} di {$complaint->location}.",
+                'is_read' => false,
+            ]);
+        }
 
         return response()->json([
             'success' => true,

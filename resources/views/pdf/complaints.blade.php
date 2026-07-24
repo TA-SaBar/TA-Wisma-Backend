@@ -66,7 +66,8 @@
         }
         .status-selesai { background-color: #d1fae5; color: #065f46; }
         .status-diproses { background-color: #dbeafe; color: #1e40af; }
-        .status-pending { background-color: #fef3c7; color: #92400e; }
+        .status-konfirmasi { background-color: #fef3c7; color: #92400e; }
+        .status-pending { background-color: #fee2e2; color: #b91c1c; }
         
         .footer {
             margin-top: 50px;
@@ -119,14 +120,17 @@
                     {{ $c->title }}
                 </td>
                 <td>
-                    @if($c->status === 'pending')
+                    @php
+                        $mappedStatus = $c->status === 'pending' ? 'Pending' : ($c->status === 'processed' ? 'Processed' : ($c->is_guest_confirmed ? 'Resolved' : 'NeedConfirmation'));
+                    @endphp
+                    @if($mappedStatus === 'Pending')
                         <span class="status status-pending">Menunggu</span>
-                    @elseif($c->status === 'diproses')
+                    @elseif($mappedStatus === 'Processed')
                         <span class="status status-diproses">Diproses</span>
-                    @elseif($c->status === 'selesai')
+                    @elseif($mappedStatus === 'NeedConfirmation')
+                        <span class="status status-konfirmasi">Menunggu Konf.</span>
+                    @elseif($mappedStatus === 'Resolved')
                         <span class="status status-selesai">Selesai</span>
-                    @else
-                        <span class="status">{{ $c->status }}</span>
                     @endif
                 </td>
             </tr>

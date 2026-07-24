@@ -73,22 +73,35 @@ class FacilitySeeder extends Seeder
             );
         }
 
-        // Ruang Rapat
-        Facility::updateOrCreate(
-            ['name' => 'Ruang Panja (Rapat)'],
-            [
-                'name'        => 'Ruang Panja (Rapat)',
-                'type'        => 'Rapat',
-                                'area'      => 'Area Bawah',
-                'capacity'    => 30,
-                'price'       => 250000,
-                'unit'        => 'day',
-                'luas'        => '60 m²',
-                'bed'         => 'Meja Rapat Oval',
-                'status'      => 'READY',
-                'photo'       => '/images/ruang_rapat.jpeg',
-                'description' => 'Ruang rapat/sidang Panja Wisma DPR RI yang nyaman, dilengkapi dengan meja oval rapat, kursi ergonomis, sound system, proyektor, AC, dan Wi-Fi cepat.',
-            ]
-        );
+        // Daftar Ruang Rapat / Sidang / Serbaguna
+        $ruangRapat = [
+            ['name' => 'Ruang Sidang Utama 1 (RSDU 1)', 'desc' => 'Ruang Sidang Utama (RSDU) Wisma DPR RI dengan kapasitas besar.', 'cap' => 100, 'price' => 1000000, 'luas' => '200 m²'],
+            ['name' => 'Ruang Sidang Utama 2 (RSDU 2)', 'desc' => 'Ruang Sidang Utama (RSDU) Wisma DPR RI dengan kapasitas besar.', 'cap' => 100, 'price' => 1000000, 'luas' => '200 m²'],
+            ['name' => 'Ruang Serbaguna 1 (RSG 1)', 'desc' => 'Ruang Serbaguna (RSG) multifungsi untuk berbagai kegiatan/acara.', 'cap' => 150, 'price' => 1500000, 'luas' => '300 m²'],
+            ['name' => 'Ruang Serbaguna 2 (RSG 2)', 'desc' => 'Ruang Serbaguna (RSG) multifungsi untuk berbagai kegiatan/acara.', 'cap' => 150, 'price' => 1500000, 'luas' => '300 m²'],
+            ['name' => 'Ruang Panja 1', 'desc' => 'Ruang rapat/sidang Panja Wisma DPR RI.', 'cap' => 30, 'price' => 250000, 'luas' => '60 m²'],
+            ['name' => 'Ruang Panja 2', 'desc' => 'Ruang rapat/sidang Panja Wisma DPR RI.', 'cap' => 30, 'price' => 250000, 'luas' => '60 m²'],
+            ['name' => 'Ruang Panja 3', 'desc' => 'Ruang rapat/sidang Panja Wisma DPR RI.', 'cap' => 30, 'price' => 250000, 'luas' => '60 m²'],
+            ['name' => 'Ruang Panja 4', 'desc' => 'Ruang rapat/sidang Panja Wisma DPR RI.', 'cap' => 30, 'price' => 250000, 'luas' => '60 m²'],
+        ];
+
+        foreach ($ruangRapat as $rapat) {
+            Facility::updateOrCreate(
+                ['name' => $rapat['name']],
+                [
+                    'name'        => $rapat['name'],
+                    'type'        => 'Rapat',
+                    'area'        => 'Area Bawah',
+                    'capacity'    => $rapat['cap'],
+                    'price'       => $rapat['price'],
+                    'unit'        => 'day',
+                    'luas'        => $rapat['luas'],
+                    'bed'         => 'Meja Rapat',
+                    'status'      => 'READY',
+                    'photo'       => '/images/ruang_rapat.jpeg', // Foto yang sama
+                    'description' => $rapat['desc'] . ' Nyaman, dilengkapi kursi ergonomis, sound system, proyektor, AC, dan Wi-Fi.',
+                ]
+            );
+        }
     }
 }

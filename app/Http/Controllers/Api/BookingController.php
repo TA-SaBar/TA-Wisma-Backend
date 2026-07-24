@@ -85,6 +85,14 @@ class BookingController extends Controller
         $data     = $request->validated();
         $facility = Facility::findOrFail($data['facility_id']);
 
+        // Proteksi Backend: Cegah booking HANYA jika fasilitas sedang MAINTENANCE
+        if ($facility->status === 'MAINTENANCE') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Fasilitas saat ini sedang dalam masa perbaikan (MAINTENANCE) dan tidak dapat dipesan.',
+            ], 422);
+        }
+
         // Kalkulasi durasi dan harga
         $checkIn  = Carbon::parse($data['check_in']);
         $checkOut = Carbon::parse($data['check_out']);
@@ -402,6 +410,18 @@ class BookingController extends Controller
             'message' => "Terima kasih telah menginap di Wisma DPR RI. Booking {$booking->booking_code} telah selesai.",
             'is_read' => false,
         ]);
+
+        // Kirim notifikasi ke koordinator wisma
+        $koordinators = \App\Models\User::where('role', 'koordinator_wisma')->get();
+        foreach ($koordinators as $koordinator) {
+            Notification::create([
+                'user_id' => $koordinator->id,
+                'type'    => 'checkout',
+                'title'   => 'Tamu Check-Out',
+                'message' => "Tamu {$booking->guest_name} telah check-out dari unit {$booking->facility->name} (Booking: {$booking->booking_code}). Fasilitas masuk antrean Cleaning.",
+                'is_read' => false,
+            ]);
+        }
 
         return response()->json([
             'success' => true,
