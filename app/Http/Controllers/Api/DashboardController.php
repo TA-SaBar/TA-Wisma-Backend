@@ -25,7 +25,8 @@ class DashboardController extends Controller
         $stats = match ($role) {
             'guest' => $this->guestStats($user),
             'receptionist' => $this->receptionistStats($today),
-            default => $this->koordinatorStats($today),
+            'customer_service' => $this->customerServiceStats(),
+            default => $this->koordinatorStats($request),
         };
 
         return response()->json([
@@ -40,12 +41,15 @@ class DashboardController extends Controller
      */
     private function guestStats($user): array
     {
-        $bookings = Booking::where('user_id', $user->id)->get();
+        $bookings = Booking::with('facility')->where('user_id', $user->id)->get();
+        $activeBookings = $bookings->whereIn('status', ['lunas', 'check_in'])->values();
 
         return [
             'total_booking'    => $bookings->count(),
-            'booking_aktif'    => $bookings->whereIn('status', ['pending', 'lunas', 'check_in'])->count(),
+            'booking_aktif'    => $activeBookings->count(),
             'booking_selesai'  => $bookings->where('status', 'selesai')->count(),
+            'total_aduan'      => \App\Models\Complaint::where('user_id', $user->id)->count(),
+            'active_reservations' => $activeBookings,
         ];
     }
 
@@ -67,23 +71,53 @@ class DashboardController extends Controller
     }
 
     /**
+     * Stats untuk role Customer Service.
+     */
+    private function customerServiceStats(): array
+    {
+        return [
+            'total_keluhan'      => \App\Models\Complaint::count(),
+            'keluhan_pending'    => \App\Models\Complaint::where('status', 'pending')->count(),
+            'keluhan_proses'     => \App\Models\Complaint::where('status', 'processed')->count(),
+            'keluhan_konfirmasi' => \App\Models\Complaint::where('status', 'resolved')->where('is_guest_confirmed', false)->count(),
+            'keluhan_selesai'    => \App\Models\Complaint::where('status', 'resolved')->where('is_guest_confirmed', true)->count(),
+        ];
+    }
+
+    /**
      * Stats untuk role Koordinator Wisma (admin).
      */
-    private function koordinatorStats(Carbon $today): array
+    private function koordinatorStats(Request $request): array
     {
-        $thisMonthStart = $today->copy()->startOfMonth();
-        $thisMonthEnd   = $today->copy()->endOfMonth();
+        $startDate = $request->input('start_date') ? Carbon::parse($request->input('start_date'))->startOfDay() : Carbon::now()->startOfMonth();
+        $endDate = $request->input('end_date') ? Carbon::parse($request->input('end_date'))->endOfDay() : Carbon::now()->endOfMonth();
 
-        $pendapatan = Booking::whereIn('status', ['lunas', 'check_in', 'selesai'])
-                             ->whereBetween('paid_at', [$thisMonthStart, $thisMonthEnd])
-                             ->sum('total_price');
+        $activeStatuses = ['lunas', 'check_in', 'selesai'];
+
+        $totalTransaksi = Booking::whereBetween('check_in', [$startDate, $endDate])->count();
+        
+        $tamuTerdaftar = Booking::whereBetween('check_in', [$startDate, $endDate])
+            ->whereIn('status', $activeStatuses)
+            ->count();
+
+        $pendapatan = Booking::whereBetween('check_in', [$startDate, $endDate])
+            ->whereIn('status', $activeStatuses)
+            ->sum('total_price');
 
         return [
-            'total_booking_bulan_ini' => Booking::whereBetween('created_at', [$thisMonthStart, $thisMonthEnd])->count(),
-            'pendapatan_bulan_ini'    => (float) $pendapatan,
-            'fasilitas_tersedia'      => Facility::where('status', 'READY')->count(),
-            'fasilitas_terpakai'      => Facility::where('status', 'OCCUPIED')->count(),
-            'tamu_menginap'           => Booking::where('status', 'check_in')->count(),
+            'periode' => [
+                'start' => $startDate->toDateString(),
+                'end' => $endDate->toDateString()
+            ],
+            'total_transaksi' => $totalTransaksi,
+            'tamu_terdaftar'  => $tamuTerdaftar,
+            'pendapatan'      => (float) $pendapatan,
+            'fasilitas' => [
+                'tersedia' => Facility::where('status', 'READY')->count(),
+                'terpakai' => Facility::where('status', 'OCCUPIED')->count(),
+                'pembersihan' => Facility::where('status', 'CLEANING')->count(),
+                'perbaikan' => Facility::where('status', 'MAINTENANCE')->count(),
+            ]
         ];
     }
 }
