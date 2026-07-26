@@ -24,7 +24,6 @@ class Facility extends Model
         'capacity',
         'price',
         'unit',
-        'luas',
         'bed',
         'status',
         'photo',

@@ -28,7 +28,6 @@ class StoreFacilityRequest extends FormRequest
             'capacity'    => ['required', 'integer', 'min:1'],
             'price'       => ['required', 'numeric', 'min:0'],
             'unit'        => ['required', 'string', 'in:night,day,4_jam'],
-            'luas'        => ['nullable', 'string', 'max:50'],
             'bed'         => ['nullable', 'string', 'max:255'],
             'status'      => ['nullable', 'in:READY,OCCUPIED,CLEANING,MAINTENANCE'],
             'photo'       => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],

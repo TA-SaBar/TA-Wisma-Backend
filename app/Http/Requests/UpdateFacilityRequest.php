@@ -28,7 +28,6 @@ class UpdateFacilityRequest extends FormRequest
             'capacity'    => ['sometimes', 'required', 'integer', 'min:1'],
             'price'       => ['sometimes', 'required', 'numeric', 'min:0'],
             'unit'        => ['sometimes', 'required', 'string', 'in:night,day,4_jam'],
-            'luas'        => ['nullable', 'string', 'max:50'],
             'bed'         => ['nullable', 'string', 'max:255'],
             'status'      => ['sometimes', 'in:READY,OCCUPIED,CLEANING,MAINTENANCE'],
             'photo'       => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
