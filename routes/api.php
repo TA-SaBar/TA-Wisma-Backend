@@ -67,7 +67,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // --- Bookings (FR-06, FR-07) ---
     Route::get('/bookings', [BookingController::class, 'index']);
-    Route::post('/bookings', [BookingController::class, 'store']);
+    Route::middleware('role:guest')->group(function () {
+        Route::post('/bookings', [BookingController::class, 'store']);
+    });
     Route::post('/bookings/{booking}/check-status', [BookingController::class, 'checkStatus']);
 
     // --- Feedback per Booking (FR-08) — hanya guest pemilik booking ---

@@ -58,14 +58,6 @@ class BookingController extends Controller
 
         $bookings = $query->get();
 
-        // Auto-expire pending bookings older than 60 minutes
-        $now = now();
-        foreach ($bookings as $b) {
-            if ($b->status === 'pending' && $b->created_at->diffInMinutes($now) >= 60) {
-                $b->update(['status' => 'cancelled']);
-                // Status is updated on the object dynamically for this response too
-            }
-        }
 
         return response()->json([
             'success' => true,
