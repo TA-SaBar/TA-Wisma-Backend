@@ -36,11 +36,10 @@ class FacilitySeeder extends Seeder
                 [
                     'name'        => 'Bungalow ' . $name,
                     'type'        => 'Buah',
-                                        'area'      => 'Area Bawah',
+                    'area'        => 'Area Bawah',
                     'capacity'    => 2,
                     'price'       => 387000,
                     'unit'        => 'night',
-                    'luas'        => '24 m²',
                     'bed'         => 'Queen Size',
                     'status'      => $status,
                     'photo'       => '/images/bungalow_buah.jpg',
@@ -60,11 +59,10 @@ class FacilitySeeder extends Seeder
                 [
                     'name'        => 'Bungalow ' . $name,
                     'type'        => 'Bunga',
-                                        'area'      => 'Area Atas',
+                    'area'        => 'Area Atas',
                     'capacity'    => 2,
                     'price'       => 549000,
                     'unit'        => 'night',
-                    'luas'        => '28 m²',
                     'bed'         => 'Twin Bed',
                     'status'      => $status,
                     'photo'       => '/images/bungalow_bunga.jpg',
@@ -75,14 +73,14 @@ class FacilitySeeder extends Seeder
 
         // Daftar Ruang Rapat / Sidang / Serbaguna
         $ruangRapat = [
-            ['name' => 'Ruang Sidang Utama 1 (RSDU 1)', 'desc' => 'Ruang Sidang Utama (RSDU) Wisma DPR RI dengan kapasitas besar.', 'cap' => 100, 'price' => 1000000, 'luas' => '200 m²'],
-            ['name' => 'Ruang Sidang Utama 2 (RSDU 2)', 'desc' => 'Ruang Sidang Utama (RSDU) Wisma DPR RI dengan kapasitas besar.', 'cap' => 100, 'price' => 1000000, 'luas' => '200 m²'],
-            ['name' => 'Ruang Serbaguna 1 (RSG 1)', 'desc' => 'Ruang Serbaguna (RSG) multifungsi untuk berbagai kegiatan/acara.', 'cap' => 150, 'price' => 1500000, 'luas' => '300 m²'],
-            ['name' => 'Ruang Serbaguna 2 (RSG 2)', 'desc' => 'Ruang Serbaguna (RSG) multifungsi untuk berbagai kegiatan/acara.', 'cap' => 150, 'price' => 1500000, 'luas' => '300 m²'],
-            ['name' => 'Ruang Panja 1', 'desc' => 'Ruang rapat/sidang Panja Wisma DPR RI.', 'cap' => 30, 'price' => 250000, 'luas' => '60 m²'],
-            ['name' => 'Ruang Panja 2', 'desc' => 'Ruang rapat/sidang Panja Wisma DPR RI.', 'cap' => 30, 'price' => 250000, 'luas' => '60 m²'],
-            ['name' => 'Ruang Panja 3', 'desc' => 'Ruang rapat/sidang Panja Wisma DPR RI.', 'cap' => 30, 'price' => 250000, 'luas' => '60 m²'],
-            ['name' => 'Ruang Panja 4', 'desc' => 'Ruang rapat/sidang Panja Wisma DPR RI.', 'cap' => 30, 'price' => 250000, 'luas' => '60 m²'],
+            ['name' => 'Ruang Sidang Utama 1 (RSDU 1)', 'area'=>'Area Atas','desc' => 'Ruang Sidang Utama (RSDU) Wisma DPR RI dengan kapasitas besar.', 'cap' => 100, 'price' => 250000],
+            ['name' => 'Ruang Sidang Utama 2 (RSDU 2)', 'area'=>'Area Bawah','desc' => 'Ruang Sidang Utama (RSDU) Wisma DPR RI dengan kapasitas besar.', 'cap' => 100, 'price' => 250000],
+            ['name' => 'Ruang Serbaguna 1 (RSG 1)', 'area'=>'Area Atas','desc' => 'Ruang Serbaguna (RSG) multifungsi untuk berbagai kegiatan/acara.', 'cap' => 150, 'price' => 250000],
+            ['name' => 'Ruang Serbaguna 2 (RSG 2)', 'area'=>'Area Bawah','desc' => 'Ruang Serbaguna (RSG) multifungsi untuk berbagai kegiatan/acara.', 'cap' => 150, 'price' => 250000],
+            ['name' => 'Ruang Panja 1', 'area'=>'Area Atas','desc' => 'Ruang rapat/sidang Panja Wisma DPR RI.', 'cap' => 30, 'price' => 250000],
+            ['name' => 'Ruang Panja 2', 'area'=>'Area Atas','desc' => 'Ruang rapat/sidang Panja Wisma DPR RI.', 'cap' => 30, 'price' => 250000],
+            ['name' => 'Ruang Panja 3', 'area'=>'Area Bawah','desc' => 'Ruang rapat/sidang Panja Wisma DPR RI.', 'cap' => 30, 'price' => 250000],
+            ['name' => 'Ruang Panja 4', 'area'=>'Area Bawah','desc' => 'Ruang rapat/sidang Panja Wisma DPR RI.', 'cap' => 30, 'price' => 250000],
         ];
 
         foreach ($ruangRapat as $rapat) {
@@ -91,11 +89,10 @@ class FacilitySeeder extends Seeder
                 [
                     'name'        => $rapat['name'],
                     'type'        => 'Rapat',
-                    'area'        => 'Area Bawah',
+                    'area'        => $rapat['area'],
                     'capacity'    => $rapat['cap'],
                     'price'       => $rapat['price'],
                     'unit'        => 'day',
-                    'luas'        => $rapat['luas'],
                     'bed'         => 'Meja Rapat',
                     'status'      => 'READY',
                     'photo'       => '/images/ruang_rapat.jpeg', // Foto yang sama
