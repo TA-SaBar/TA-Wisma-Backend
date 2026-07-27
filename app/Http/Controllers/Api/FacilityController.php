@@ -6,12 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreFacilityRequest;
 use App\Http\Requests\UpdateFacilityRequest;
 use App\Models\Facility;
+use App\Services\FacilityService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class FacilityController extends Controller
 {
+    protected FacilityService $facilityService;
+
+    public function __construct(FacilityService $facilityService)
+    {
+        $this->facilityService = $facilityService;
+    }
+
     /**
      * Display a listing of facilities with filters.
      *
@@ -28,28 +35,19 @@ class FacilityController extends Controller
     {
         $query = Facility::query();
 
-        // BUG ITERASI 1 SUDAH DIPERBAIKI:
-        // Sebelumnya, blok filter status me-return lebih awal sehingga filter
-        // type, gedung, area, dan search diabaikan ketika status diisi.
-        // Sekarang semua filter dibangun secara berantai sebelum query dieksekusi.
-
-        // Filter by status
-        if ($request->has('status') && $request->status !== '') {
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter by type
-        if ($request->has('type') && $request->type !== '') {
+        if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
 
-        // Filter by area (formerly area)
-        if ($request->has('area') && $request->area !== '') {
+        if ($request->filled('area')) {
             $query->where('area', $request->area);
         }
 
-        // Search by name or description
-        if ($request->has('search') && $request->search !== '') {
+        if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
                   ->orWhere('description', 'like', '%' . $request->search . '%');
@@ -72,15 +70,10 @@ class FacilityController extends Controller
      */
     public function store(StoreFacilityRequest $request): JsonResponse
     {
-        $data = $request->validated();
-
-        // Handle file upload for photo
-        if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('facilities', 'public');
-            $data['photo'] = '/storage/' . $path;
-        }
-
-        $facility = Facility::create($data);
+        $facility = $this->facilityService->storeFacility(
+            $request->validated(), 
+            $request->file('photo')
+        );
 
         return response()->json([
             'success' => true,
@@ -109,15 +102,7 @@ class FacilityController extends Controller
      */
     public function bookedDates(Facility $facility): JsonResponse
     {
-        $bookings = \App\Models\Booking::where('facility_id', $facility->id)
-            ->where(function ($q) {
-                $q->whereIn('status', ['lunas', 'check_in'])
-                  ->orWhere(function ($q2) {
-                      $q2->where('status', 'pending')
-                         ->where('created_at', '>=', now()->subMinutes(60));
-                  });
-            })
-            ->get(['check_in', 'check_out']);
+        $bookings = $this->facilityService->getBookedDates($facility);
 
         return response()->json([
             'success' => true,
@@ -132,26 +117,16 @@ class FacilityController extends Controller
      */
     public function update(UpdateFacilityRequest $request, Facility $facility): JsonResponse
     {
-        $data = $request->validated();
-
-        // Handle file upload for photo
-        if ($request->hasFile('photo')) {
-            // Delete old photo if exists and is a local file
-            if ($facility->photo && str_starts_with($facility->photo, '/storage/')) {
-                $oldPath = str_replace('/storage/', '', $facility->photo);
-                Storage::disk('public')->delete($oldPath);
-            }
-
-            $path = $request->file('photo')->store('facilities', 'public');
-            $data['photo'] = '/storage/' . $path;
-        }
-
-        $facility->update($data);
+        $facility = $this->facilityService->updateFacility(
+            $facility, 
+            $request->validated(), 
+            $request->file('photo')
+        );
 
         return response()->json([
             'success' => true,
             'message' => 'Fasilitas berhasil diperbarui.',
-            'data' => $facility->fresh(),
+            'data' => $facility,
         ]);
     }
 
@@ -162,13 +137,7 @@ class FacilityController extends Controller
      */
     public function destroy(Facility $facility): JsonResponse
     {
-        // Delete photo file if exists
-        if ($facility->photo && str_starts_with($facility->photo, '/storage/')) {
-            $oldPath = str_replace('/storage/', '', $facility->photo);
-            Storage::disk('public')->delete($oldPath);
-        }
-
-        $facility->delete();
+        $this->facilityService->deleteFacility($facility);
 
         return response()->json([
             'success' => true,

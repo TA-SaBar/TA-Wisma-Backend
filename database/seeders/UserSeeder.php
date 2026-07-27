@@ -41,7 +41,7 @@ class UserSeeder extends Seeder
                 'phone' => '+62 812-3456-7890',
                 'role' => 'guest',
                 'instansi' => 'Sekretariat Jenderal DPR RI',
-                'kunjungan' => 12,
+                'kunjungan' => 0,
                 'password' => Hash::make('password'),
             ],
             [

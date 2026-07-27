@@ -5,12 +5,19 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreComplaintRequest;
 use App\Models\Complaint;
-use App\Models\Notification;
+use App\Services\ComplaintService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ComplaintController extends Controller
 {
+    protected ComplaintService $complaintService;
+
+    public function __construct(ComplaintService $complaintService)
+    {
+        $this->complaintService = $complaintService;
+    }
+
     /**
      * Tampilkan daftar keluhan.
      * - Guest: hanya milik sendiri
@@ -27,17 +34,14 @@ class ComplaintController extends Controller
             $query->where('user_id', $user->id);
         }
 
-        // Filter by status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter by category
         if ($request->filled('category')) {
             $query->where('category', $request->category);
         }
 
-        // Search by title or complaint_code
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -47,7 +51,6 @@ class ComplaintController extends Controller
         }
 
         $complaints = $query->get();
-
 
         return response()->json([
             'success' => true,
@@ -63,30 +66,7 @@ class ComplaintController extends Controller
      */
     public function store(StoreComplaintRequest $request): JsonResponse
     {
-        $user = $request->user();
-        $data = $request->validated();
-
-        $complaint = Complaint::create([
-            'complaint_code' => Complaint::generateComplaintCode(),
-            'user_id'        => $user->id,
-            'title'          => $data['title'],
-            'category'       => $data['category'],
-            'location'       => $data['location'],
-            'description'    => $data['description'] ?? null,
-            'status'         => 'pending',
-        ]);
-
-        // Kirim notifikasi ke Customer Service
-        $csUsers = \App\Models\User::where('role', 'customer_service')->get();
-        foreach ($csUsers as $cs) {
-            \App\Models\Notification::create([
-                'user_id' => $cs->id,
-                'type'    => 'complaint',
-                'title'   => 'Keluhan Baru',
-                'message' => "Tamu {$user->name} mengajukan keluhan baru: {$complaint->title} di {$complaint->location}.",
-                'is_read' => false,
-            ]);
-        }
+        $complaint = $this->complaintService->createComplaint($request->user(), $request->validated());
 
         return response()->json([
             'success' => true,
@@ -109,21 +89,7 @@ class ComplaintController extends Controller
             ], 422);
         }
 
-        $complaint->update(['status' => 'processed']);
-
-        // Kirim notifikasi ke pelapor
-        if ($complaint->user_id) {
-            Notification::create([
-                'user_id' => $complaint->user_id,
-                'type'    => 'complaint',
-                'title'   => 'Keluhan Sedang Diproses',
-                'message' => "Keluhan Anda ({$complaint->complaint_code}) sedang ditangani oleh tim Customer Service kami.",
-                'is_read' => false,
-            ]);
-        }
-
-
-
+        $this->complaintService->processComplaint($complaint);
 
         return response()->json([
             'success' => true,
@@ -146,24 +112,7 @@ class ComplaintController extends Controller
             ], 422);
         }
 
-        $complaint->update([
-            'status'      => 'resolved',
-            'resolved_by' => $request->user()->name,
-            'resolved_at' => now(),
-        ]);
-
-        // Buat notifikasi untuk tamu agar melakukan konfirmasi
-        \App\Models\Notification::create([
-            'user_id' => $complaint->user_id,
-            'type'    => 'info',
-            'title'   => 'Konfirmasi Penyelesaian Keluhan',
-            'message' => "Keluhan Anda ({$complaint->complaint_code}) di {$complaint->location} telah diselesaikan oleh tim teknis. Mohon konfirmasi apakah masalah telah benar-benar teratasi.",
-            'related_id' => $complaint->id,
-            'related_type' => 'complaint_confirmation'
-        ]);
-
-
-
+        $this->complaintService->resolveComplaint($complaint, $request->user());
 
         return response()->json([
             'success' => true,
@@ -192,12 +141,7 @@ class ComplaintController extends Controller
             ], 403);
         }
 
-        $complaint->update([
-            'is_guest_confirmed' => true,
-        ]);
-
-
-
+        $this->complaintService->confirmComplaint($complaint);
 
         return response()->json([
             'success' => true,
@@ -222,21 +166,7 @@ class ComplaintController extends Controller
             'user_id'     => ['required', 'exists:users,id'],
         ]);
 
-        $complaint = Complaint::create([
-            'complaint_code' => Complaint::generateComplaintCode(),
-            'user_id'        => $data['user_id'],
-            'title'          => $data['title'],
-            'category'       => $data['category'],
-            'location'       => $data['location'],
-            'description'    => $data['description'] ?? null,
-            'status'         => 'pending',
-            'resolved_by'    => null,
-        ]);
-        
-        $complaint->load('user');
-
-
-
+        $complaint = $this->complaintService->createManualComplaint($data);
 
         return response()->json([
             'success' => true,
