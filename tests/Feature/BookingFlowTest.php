@@ -29,7 +29,7 @@ class BookingFlowTest extends TestCase
     public function test_guest_can_create_booking()
     {
         [$guest, $token] = $this->getGuestWithToken();
-        $facility = Facility::factory()->create(['status' => 'READY', 'price' => 387000]);
+        $facility = Facility::factory()->create(['status' => 'READY', 'price' => 387000, 'unit' => 'night']);
 
         $response = $this->withHeaders(['Authorization' => 'Bearer ' . $token])
             ->postJson('/api/bookings', [
@@ -52,7 +52,7 @@ class BookingFlowTest extends TestCase
     {
         [$guest, $token] = $this->getGuestWithToken();
         $pricePerNight = 387000;
-        $facility = Facility::factory()->create(['price' => $pricePerNight]);
+        $facility = Facility::factory()->create(['status' => 'READY', 'price' => $pricePerNight, 'unit' => 'night']);
 
         $checkIn  = now()->addDay()->toDateString();
         $checkOut = now()->addDays(4)->toDateString(); // 3 malam

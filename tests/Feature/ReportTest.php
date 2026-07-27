@@ -80,14 +80,14 @@ class ReportTest extends TestCase
                  ->assertJsonPath('data.ringkasan.total_pendapatan', 888000 + 1332000);
     }
 
-    public function test_financial_report_requires_date_range()
+    public function test_financial_report_can_be_fetched_without_date_range()
     {
         [$koordinator, $token] = $this->koordinatorWithToken();
 
         $response = $this->withHeaders(['Authorization' => 'Bearer ' . $token])
             ->getJson('/api/reports/financial');
 
-        $response->assertStatus(422);
+        $response->assertStatus(200);
     }
 
     public function test_financial_report_rejects_invalid_date_range()

@@ -49,8 +49,8 @@ class Booking extends Model
     protected function casts(): array
     {
         return [
-            'check_in' => 'date',
-            'check_out' => 'date',
+            'check_in' => 'date:Y-m-d',
+            'check_out' => 'date:Y-m-d',
             'subtotal' => 'decimal:2',
             'tax' => 'decimal:2',
             'total_price' => 'decimal:2',
