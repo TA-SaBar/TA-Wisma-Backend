@@ -124,6 +124,21 @@ class BookingService
                 'is_read'      => false,
             ]);
         }
+
+        // Notifikasi ke koordinator wisma
+        $koordinators = User::where('role', 'koordinator_wisma')->get();
+        foreach ($koordinators as $koordinator) {
+            $formattedCheckIn = Carbon::parse($booking->check_in)->translatedFormat('l, d F Y');
+            Notification::create([
+                'user_id'      => $koordinator->id,
+                'type'         => 'booking',
+                'title'        => 'Pemesanan Baru (Lunas)',
+                'message'      => "Pemesanan baru {$booking->booking_code} telah lunas. Tamu dijadwalkan check-in pada {$formattedCheckIn}",
+                'related_id'   => $booking->id,
+                'related_type' => 'new_booking',
+                'is_read'      => false,
+            ]);
+        }
     }
 
     /**

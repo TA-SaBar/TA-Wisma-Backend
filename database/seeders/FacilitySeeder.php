@@ -73,8 +73,8 @@ class FacilitySeeder extends Seeder
 
         // Daftar Ruang Rapat / Sidang / Serbaguna
         $ruangRapat = [
-            ['name' => 'Ruang Sidang Utama 1 (RSDU 1)', 'area'=>'Area Atas','desc' => 'Ruang Sidang Utama (RSDU) Wisma DPR RI dengan kapasitas besar.', 'cap' => 100, 'price' => 250000],
-            ['name' => 'Ruang Sidang Utama 2 (RSDU 2)', 'area'=>'Area Bawah','desc' => 'Ruang Sidang Utama (RSDU) Wisma DPR RI dengan kapasitas besar.', 'cap' => 100, 'price' => 250000],
+            ['name' => 'Ruang Sidang Utama 1 (RSDU 1)', 'area'=>'Area Atas','desc' => 'Ruang Sidang Utama (RSDU) Wisma DPR RI dengan kapasitas besar.', 'cap' => 100, 'price' => 300000],
+            ['name' => 'Ruang Sidang Utama 2 (RSDU 2)', 'area'=>'Area Bawah','desc' => 'Ruang Sidang Utama (RSDU) Wisma DPR RI dengan kapasitas besar.', 'cap' => 100, 'price' => 300000],
             ['name' => 'Ruang Serbaguna 1 (RSG 1)', 'area'=>'Area Atas','desc' => 'Ruang Serbaguna (RSG) multifungsi untuk berbagai kegiatan/acara.', 'cap' => 150, 'price' => 250000],
             ['name' => 'Ruang Serbaguna 2 (RSG 2)', 'area'=>'Area Bawah','desc' => 'Ruang Serbaguna (RSG) multifungsi untuk berbagai kegiatan/acara.', 'cap' => 150, 'price' => 250000],
             ['name' => 'Ruang Panja 1', 'area'=>'Area Atas','desc' => 'Ruang rapat/sidang Panja Wisma DPR RI.', 'cap' => 30, 'price' => 250000],
