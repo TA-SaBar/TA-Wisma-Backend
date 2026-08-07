@@ -42,7 +42,7 @@ class FacilitySeeder extends Seeder
                     'unit'        => 'night',
                     'bed'         => 'Queen Size',
                     'status'      => $status,
-                    'photo'       => '/images/bungalow_buah.jpg',
+                    'photo'       => '/images/webp/bungalow_buah.webp',
                     'description' => 'Bungalow Standard tipe Buah yang nyaman dengan fasilitas tempat tidur Queen Size, AC, TV, kamar mandi dalam, dan perlengkapan mandi lengkap.',
                 ]
             );
@@ -65,7 +65,7 @@ class FacilitySeeder extends Seeder
                     'unit'        => 'night',
                     'bed'         => 'Twin Bed',
                     'status'      => $status,
-                    'photo'       => '/images/bungalow_bunga.jpg',
+                    'photo'       => '/images/webp/bungalow_bunga.webp',
                     'description' => 'Bungalow Standard tipe Bunga yang tenang dan bersih di area atas, dilengkapi dengan Twin Bed, AC, TV, Wi-Fi, dan pemandangan luar wisma.',
                 ]
             );
@@ -95,7 +95,7 @@ class FacilitySeeder extends Seeder
                     'unit'        => 'day',
                     'bed'         => 'Meja Rapat',
                     'status'      => 'READY',
-                    'photo'       => '/images/ruang_rapat.jpeg', // Foto yang sama
+                    'photo'       => '/images/webp/ruang_rapat.webp', // Foto yang sama
                     'description' => $rapat['desc'] . ' Nyaman, dilengkapi kursi ergonomis, sound system, proyektor, AC, dan Wi-Fi.',
                 ]
             );

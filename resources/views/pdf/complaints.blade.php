@@ -35,6 +35,23 @@
             top: 0;
             text-align: right;
         }
+        .filters {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .filters table {
+            width: 100%;
+        }
+        .filters td {
+            vertical-align: top;
+            font-size: 10px;
+        }
+        .filters strong {
+            color: #0f172a;
+        }
         table.data {
             width: 100%;
             border-collapse: collapse;
@@ -85,16 +102,42 @@
 <body>
 
     <div class="header">
-        <img src="{{ public_path('images/logo.png') }}" alt="Logo" style="position: absolute; left: 0; top: 0; height: 45px;">
+        <img src="{{ public_path('images/webp/logo.webp') }}" alt="Logo" style="position: absolute; left: 0; top: 0; height: 45px;">
         <div style="margin-left: 60px;">
             <h1>LAPORAN REKAPITULASI KELUHAN TAMU</h1>
             <p>Sistem Pelayanan Wisma DPR RI Kopo</p>
         </div>
         
         <div class="meta">
-            <p><strong>Dicetak Tanggal:</strong> {{ date('d/m/Y H:i') }}</p>
-            <p><strong>Total Keluhan:</strong> {{ count($complaints) }}</p>
+            <p><strong>Dicetak pada:</strong><br>{{ now()->translatedFormat('d F Y, H:i') }}</p>
         </div>
+    </div>
+
+    <div class="filters">
+        <table>
+            <tr>
+                <td width="25%">
+                    <strong>Periode:</strong><br>
+                    @if($request->filled('start_date') && $request->filled('end_date'))
+                        {{ \Carbon\Carbon::parse($request->start_date)->translatedFormat('d F Y') }} - {{ \Carbon\Carbon::parse($request->end_date)->translatedFormat('d F Y') }}
+                    @else
+                        Semua Periode
+                    @endif
+                </td>
+                <td width="25%">
+                    <strong>Kategori:</strong><br>
+                    {{ $request->filled('category') && $request->category !== 'semua' ? strtoupper($request->category) : 'SEMUA KATEGORI' }}
+                </td>
+                <td width="25%">
+                    <strong>Status:</strong><br>
+                    {{ $request->filled('status') && $request->status !== 'semua' ? strtoupper($request->status) : 'SEMUA STATUS' }}
+                </td>
+                <td width="25%">
+                    <strong>Total Keluhan:</strong><br>
+                    {{ count($complaints) }}
+                </td>
+            </tr>
+        </table>
     </div>
 
     <table class="data">

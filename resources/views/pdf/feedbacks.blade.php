@@ -45,6 +45,13 @@
         .filters table {
             width: 100%;
         }
+        .filters td {
+            vertical-align: top;
+            font-size: 10px;
+        }
+        .filters strong {
+            color: #0f172a;
+        }
         table.data {
             width: 100%;
             border-collapse: collapse;
@@ -84,16 +91,34 @@
 <body>
 
     <div class="header">
-        <img src="{{ public_path('images/logo.png') }}" alt="Logo" style="position: absolute; left: 0; top: 0; height: 45px;">
+        <img src="{{ public_path('images/webp/logo.webp') }}" alt="Logo" style="position: absolute; left: 0; top: 0; height: 45px;">
         <div style="margin-left: 60px;">
             <h1>LAPORAN ULASAN & PENILAIAN TAMU</h1>
             <p>Sistem Pelayanan Wisma DPR RI Kopo</p>
         </div>
         
         <div class="meta">
-            <p><strong>Dicetak Tanggal:</strong> {{ date('d/m/Y H:i') }}</p>
-            <p><strong>Total Ulasan:</strong> {{ $aggregation['total'] }}</p>
+            <p><strong>Dicetak pada:</strong><br>{{ now()->translatedFormat('d F Y, H:i') }}</p>
         </div>
+    </div>
+
+    <div class="filters">
+        <table>
+            <tr>
+                <td width="50%">
+                    <strong>Periode:</strong><br>
+                    @if($request->filled('start_date') && $request->filled('end_date'))
+                        {{ \Carbon\Carbon::parse($request->start_date)->translatedFormat('d F Y') }} - {{ \Carbon\Carbon::parse($request->end_date)->translatedFormat('d F Y') }}
+                    @else
+                        Semua Periode
+                    @endif
+                </td>
+                <td width="50%">
+                    <strong>Total Ulasan:</strong><br>
+                    {{ count($feedbacks) }}
+                </td>
+            </tr>
+        </table>
     </div>
 
     <div class="filters">

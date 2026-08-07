@@ -26,7 +26,7 @@ class FeedbackController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $result = $this->feedbackService->getFeedbacks();
+        $result = $this->feedbackService->getFeedbacks($request->start_date, $request->end_date);
 
         return response()->json([
             'success'     => true,
@@ -66,7 +66,7 @@ class FeedbackController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        $result = $this->feedbackService->getFeedbacks();
+        $result = $this->feedbackService->getFeedbacks($request->start_date, $request->end_date);
         $feedbacks = $result['feedbacks'];
         $aggregation = $result['aggregation'];
 

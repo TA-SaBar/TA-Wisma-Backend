@@ -14,9 +14,18 @@ class FeedbackService
      *
      * @return array
      */
-    public function getFeedbacks(): array
+    public function getFeedbacks(?string $startDate = null, ?string $endDate = null): array
     {
-        $feedbacks = Feedback::with(['booking.facility', 'user'])->latest()->get();
+        $query = Feedback::with(['booking.facility', 'user'])->latest();
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('created_at', [
+                \Carbon\Carbon::parse($startDate)->startOfDay(),
+                \Carbon\Carbon::parse($endDate)->endOfDay()
+            ]);
+        }
+
+        $feedbacks = $query->get();
 
         $aggregation = [
             'total'               => $feedbacks->count(),

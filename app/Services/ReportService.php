@@ -22,7 +22,7 @@ class ReportService
     {
         $query = Booking::with(['facility', 'user'])
             ->whereIn('status', ['lunas', 'check_in', 'selesai'])
-            ->orderBy('paid_at');
+            ->orderBy('check_in');
 
         if ($status && $status !== 'semua') {
             $query->where('status', $status);
@@ -46,7 +46,7 @@ class ReportService
         if ($startDate && $endDate) {
             $sDate = Carbon::parse($startDate)->startOfDay();
             $eDate = Carbon::parse($endDate)->endOfDay();
-            $query->whereBetween('paid_at', [$sDate, $eDate]);
+            $query->whereBetween('check_in', [$sDate, $eDate]);
         }
 
         $bookings = $query->get();
